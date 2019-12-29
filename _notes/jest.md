@@ -35,3 +35,9 @@ describe('Appointment', () => {
 ```
   jest --watchAll
 ```
+
+## Click
+```
+import ReactTestUtils from 'react-dom/test-utils';
+ReactTestUtils.Simulate.click(button);
+```
