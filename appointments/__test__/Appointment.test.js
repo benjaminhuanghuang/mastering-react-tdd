@@ -16,14 +16,14 @@ describe('Appointment', () => {
   })
 
   it("renders the customer first name", () => {
-    const customer = {firstName: 'Abc'}
+    customer = {firstName: 'Abc'}
     const component = <Appointment customer={customer} />
     render(component)
     expect(container.textContent).toMatch('Abc')
   })
 
   it("renders another customer first name", () => {
-    const customer = {firstName: '1234'}
+    customer = {firstName: '1234'}
     render(<Appointment customer={customer} />)
     expect(container.textContent).toMatch('1234')
   })

@@ -29,3 +29,9 @@ describe('Appointment', () => {
   })
 })
 ```
+
+
+## Ject command line 
+```
+  jest --watchAll
+```
