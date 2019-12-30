@@ -41,3 +41,20 @@ describe('Appointment', () => {
 import ReactTestUtils from 'react-dom/test-utils';
 ReactTestUtils.Simulate.click(button);
 ```
+
+
+## async
+```
+  it('saves existing value when submitted', async () => {
+    render(<CustomerForm {...{ [fieldName]: value }} />);
+
+    ReactTestUtils.Simulate.submit(form('customer'));
+
+    const fetchOpts = fetchSpy.receivedArgument(1);
+    expect(JSON.parse(fetchOpts.body)[fieldName]).toEqual(value);
+  });
+```
+The **async** keywords tells Jest that the test will return a promise, and that the test runner should wait for that 
+promise to resolve before reporting on the success or failure of the test.
+
+
