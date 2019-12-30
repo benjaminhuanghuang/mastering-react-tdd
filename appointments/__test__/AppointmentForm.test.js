@@ -1,5 +1,5 @@
 import React from 'react';
-import 'whatwg-fetch';
+import 'whatwg-fetch';   // define window.fetch
 import {
   fetchResponseOk,
   fetchResponseError,
@@ -35,7 +35,7 @@ describe('AppointmentForm', () => {
     } = createContainer());
     
     jest
-      .spyOn(window, 'fetch')
+      .spyOn(window, 'fetch')  // Jest save the original window.fetch and mock it
       .mockReturnValue(fetchResponseOk({}));
   });
 

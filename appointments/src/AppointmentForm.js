@@ -11,7 +11,7 @@ export default function AppointmentForm ({
   selectableStylists,
   stylist,
   serviceStylists,
-  onSave,
+  onSave,  // notify parent compoent then the form data has been saved
   salonOpensAt,
   salonClosesAt,
   today,
