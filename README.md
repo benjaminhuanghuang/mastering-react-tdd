@@ -7,3 +7,9 @@ Projects for the book **Mastering React Test-Driven Development** by Daniel Irvi
 
 
 
+
+
+## Key points
+- Setup a react project with webpack manually ch 1
+- Test form input: ch 2
+- Client side validation: ch5
