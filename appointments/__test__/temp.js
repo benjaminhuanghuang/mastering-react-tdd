@@ -1,5 +1,4 @@
 import React, { useState, useCallback } from 'react';
-import TimeSlotTable from './TimeSlotTable';
 
 const Error = () => (
   <div className="error">An error occurred during save.</div>
@@ -42,6 +41,71 @@ const mergeDateAndTime = (date, timeSlot) => {
     time.getMinutes(),
     time.getSeconds(),
     time.getMilliseconds()
+  );
+};
+
+const RadioButtonIfAvailable = ({
+  availableTimeSlots,
+  date,
+  timeSlot,
+  checkedTimeSlot,
+  handleChange
+}) => {
+  const startsAt = mergeDateAndTime(date, timeSlot);
+  if (availableTimeSlots.some(a => a.startsAt === startsAt)) {
+    const isChecked = startsAt === checkedTimeSlot;
+    return (
+      <input
+        name="startsAt"
+        type="radio"
+        value={startsAt}
+        checked={isChecked}
+        onChange={handleChange}
+      />
+    );
+  }
+  return null;
+};
+
+const TimeSlotTable = ({
+  salonOpensAt,
+  salonClosesAt,
+  today,
+  availableTimeSlots,
+  checkedTimeSlot,
+  handleChange
+}) => {
+  const dates = weeklyDateValues(today);
+  const timeSlots = dailyTimeSlots(salonOpensAt, salonClosesAt);
+  return (
+    <table id="time-slots">
+      <thead>
+        <tr>
+          <th />
+          {dates.map(d => (
+            <th key={d}>{toShortDate(d)}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {timeSlots.map(timeSlot => (
+          <tr key={timeSlot}>
+            <th>{toTimeValue(timeSlot)}</th>
+            {dates.map(date => (
+              <td key={date}>
+                <RadioButtonIfAvailable
+                  availableTimeSlots={availableTimeSlots}
+                  date={date}
+                  timeSlot={timeSlot}
+                  checkedTimeSlot={checkedTimeSlot}
+                  handleChange={handleChange}
+                />
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 };
 

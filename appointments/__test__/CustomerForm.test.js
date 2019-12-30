@@ -1,11 +1,24 @@
 import React from 'react';
+import 'whatwg-fetch';
 import ReactTestUtils, { act } from 'react-dom/test-utils';
 import { createContainer } from './domManipulators';
 import CustomerForm from '../src/CustomerForm';
+import {
+  fetchResponseOk,
+  fetchResponseError,
+  requestBodyOf
+} from './spyHelpers';
 
 describe('CustomerForm', () => {
-  let render, container;
-  let fetchSpy;
+  let render,
+  container,
+  form,
+  field,
+  labelFor,
+  element,
+  change,
+  submit;
+
   const originalFetch = window.fetch;
   const form = id => container.querySelector(`form[id="${id}"]`);
   const field = name => form('customer').elements[name];
@@ -13,10 +26,20 @@ describe('CustomerForm', () => {
 
   beforeEach(() => {
     // destructuring assignment where the variables have been declared
-    ({ render, container } = createContainer());
+    ({
+      render,
+      container,
+      form,
+      field,
+      labelFor,
+      element,
+      change,
+      submit
+    } = createContainer());
+
     fetchSpy = spy();
     // No need to pass fetch function to CustomerForm as a prop.
-    windows.fetch = fetchSpy.fn;
+    jest.spyOn(window, 'fetch').mockReturnValue(fetchResponseOk({}))
   });
   
   afterEach(() => {

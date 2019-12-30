@@ -26,5 +26,12 @@ Warning when need act:
 ```
 
 
-- Array.from(dropdownNode.childNodes);
+## Array.from(dropdownNode.childNodes); 
+
+- [x] resloved
+
+// The DOM objects are changes, By calling Array.from, we taks a snaphow of the value within it at a particular momonet
 How about using dropdownNode.childNodes directly?
+
+
+## whatwg-fetch

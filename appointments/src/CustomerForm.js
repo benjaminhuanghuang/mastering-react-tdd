@@ -4,19 +4,18 @@ const Error = () => (
   <div className="error">An error occurred during save.</div>
 );
 
-export default function CustomerForm({
+export const CustomerForm = ({
   firstName,
   lastName,
   phoneNumber,
-  onSubmit
-}) {
+  onSave
+}) => {
   const [error, setError] = useState(false);
 
   const [customer, setCustomer] = useState({
     firstName,
     lastName,
-    phoneNumber,
-    onSave
+    phoneNumber
   });
 
   const handleChange = ({ target }) =>
@@ -27,15 +26,19 @@ export default function CustomerForm({
 
   const handleSubmit = async e => {
     e.preventDefault();
-    onsubmit(customer)
     const result = await window.fetch('/customers', {
       method: 'POST',
       credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(customer)
-    });  
-    const cusotmerWithId = await result.json();
-    onSave(cusotmerWithId);
+    });
+    if (result.ok) {
+      setError(false);
+      const customerWithId = await result.json();
+      onSave(customerWithId);
+    } else {
+      setError(true);
+    }
   };
 
   return (
@@ -74,4 +77,5 @@ export default function CustomerForm({
 };
 
 CustomerForm.defaultProps = {
+  onSave: () => {}
 };
