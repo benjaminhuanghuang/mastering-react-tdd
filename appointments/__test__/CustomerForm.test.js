@@ -96,7 +96,7 @@ describe('CustomerForm', () => {
     itIncludesTheExistingValue('firstName');
     itRendersALabel('firstName', 'First name');
     itAssignsAnIdThatMatchesTheLabelId('firstName');
-    itSubmitsExistingValue('firstName', 'value');
+    // itSubmitsExistingValue('firstName', 'value');
     // itSubmitsNewValue('firstName', 'newValue');
   });
 

@@ -4,7 +4,7 @@ const Error = () => (
   <div className="error">An error occurred during save.</div>
 );
 
-export default function CustomerForm ({
+export default function CustomerForm({
   firstName,
   lastName,
   phoneNumber,
@@ -76,5 +76,5 @@ export default function CustomerForm ({
 };
 
 CustomerForm.defaultProps = {
-  onSave: () => {}
+  onSave: () => { }
 };
