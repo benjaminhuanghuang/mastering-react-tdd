@@ -1,9 +1,16 @@
 
-## Does element exist
+## Find element
 ```
+// Find from by id
 const form = id => container.querySelector(`form[id="${id}"]`);
-// check from by id
 expect(form('appointment')).not.toBeNull();
+
+// Find table by id
+container.querySelector('table#time-slots');
+
+// Find element by type
+cells[0].querySelector('input[type="radio"]')
+
 ```
 
 
@@ -27,6 +34,22 @@ expect(document.body.textContent).toMatch('Abc')
   expect(firstNode.selected).toBeTruthy();
 ```
 
+## Test form submit
+```
+it('saves existing value when submitted', async () => {
+  let submitArg;
+
+  render(<CustomerForm {...{ [fieldName]: value }} onSumbit={customer=>submitArg = customer}/>);
+
+  ReactTestUtils.Simulate.submit(form('customer'));
+
+  const fetchOpts = fetchSpy.receivedArgument(1);
+  expect(submitArg[fieldName].toEqual(value))
+  //expect(JSON.parse(fetchOpts.body)[fieldName]).toEqual(value);
+});
+```
+
+
 ## Reusable functions
 ```
 // get form element by #id
@@ -46,7 +69,35 @@ const labelFor = formElement => container.querySelector(`label[for="${formElemen
     );
   };
 ```
+
+
+## Refactor
+The logic for 'firstName' can be reused to other fields 
+```
+it("renders the first name field as a text box", () => {
+    render(<CustomerForm />);
+    const field = form("customer").elements.firstName;
+    expect(field).not.toBeNull();
+    expect(field.tagName).toEqual('INPUT')
+    expect(field.type).toEqual('text');
+  })
+```
+Refactor to 
+```
+const expectToBeInputFieldOfTypeText = formElement => {
+    expect(formElement).not.toBeNull();
+    expect(formElement.tagName).toEqual('INPUT');
+    expect(formElement.type).toEqual('text');
+  };
+
+const itRendersAsATextBox = fieldName =>
+  it('renders as a text box', () => {
+    render(<CustomerForm />);
+    expectToBeInputFieldOfTypeText(field(fieldName));
+  });
+```
 ## 
 ```
 it.skip("", ()=>{})
+it.only("", ()=>{})
 ```

@@ -30,12 +30,6 @@ describe('Appointment', () => {
 })
 ```
 
-
-## Ject command line 
-```
-  jest --watchAll
-```
-
 ## Click
 ```
 import ReactTestUtils from 'react-dom/test-utils';

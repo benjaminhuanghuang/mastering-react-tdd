@@ -11,7 +11,7 @@ create script in package.json
 ```
   npm i -D react react-dom
 ```
-## Bable
+## Bable and presets
 Install
 ```
   npm i -D @babel/preset-env @babel/preset-react

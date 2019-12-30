@@ -6,19 +6,55 @@ import CustomerForm from '../src/CustomerForm';
 describe('CustomerForm', () => {
   let render, container;
   let fetchSpy;
+  const originalFetch = window.fetch;
   const form = id => container.querySelector(`form[id="${id}"]`);
   const field = name => form('customer').elements[name];
   const labelFor = formElement => container.querySelector(`label[for="${formElement}"]`);
 
-  const expectToBeInputFieldOfTypeText = formElement => {
-    expect(formElement).not.toBeNull();
-    expect(formElement.tagName).toEqual('INPUT');
-    expect(formElement.type).toEqual('text');
-  };
-
   beforeEach(() => {
     // destructuring assignment where the variables have been declared
     ({ render, container } = createContainer());
+    fetchSpy = spy();
+    // No need to pass fetch function to CustomerForm as a prop.
+    windows.fetch = fetchSpy.fn;
+  });
+  
+  afterEach(() => {
+    window.fetch = originalFetch;
+  });
+
+  const spy = () => {
+    let receivedArguments;
+    let returnValue;
+
+    return {
+      fn: (...args) => {
+        receivedArguments = args;
+        //
+        return returnValue; 
+      },
+      receivedArguments: () => receivedArguments,
+      receivedArgument: n => receivedArguments[n],
+      stubReturnValue: (value)=> returnValue = value
+    };
+  };
+
+  const fetchResponseOk = body =>
+    Promise.resolve({
+      ok: true,
+      json: ()=>Promise.resolove(body)
+    })
+
+  expect.extend({
+    toHaveBeenCalled(received) {
+      if (received.receivedArguments() === undefined) {
+        return {
+          pass: false,
+          message: () => 'Spy was not called.'
+        };
+      }
+      return { pass: true, message: () => 'Spy was called.' };
+    }
   });
 
   it('renders a form', () => {
@@ -34,6 +70,7 @@ describe('CustomerForm', () => {
     expect(submitButton).not.toBeNull();
   });
 
+  // this logic was moved to itRendersAsATextBox(fieldName)
   it("renders the first name field as a text box", () => {
     render(<CustomerForm />);
     const field = form("customer").elements.firstName;
@@ -41,6 +78,12 @@ describe('CustomerForm', () => {
     expect(field.tagName).toEqual('INPUT')
     expect(field.type).toEqual('text');
   })
+
+  const expectToBeInputFieldOfTypeText = formElement => {
+    expect(formElement).not.toBeNull();
+    expect(formElement.tagName).toEqual('INPUT');
+    expect(formElement.type).toEqual('text');
+  };
 
   const itRendersAsATextBox = fieldName =>
     it('renders as a text box', () => {
@@ -69,12 +112,18 @@ describe('CustomerForm', () => {
 
   const itSubmitsExistingValue = (fieldName, value) =>
     it('saves existing value when submitted', async () => {
-      render(<CustomerForm {...{ [fieldName]: value }} />);
+      let submitSpy = spy();
+      let fetchSpy = spy();
+
+      render(<CustomerForm {...{ [fieldName]: value }} fetch={fetchSpy.fn} onSumbit={submitSpy.fn} />);
 
       ReactTestUtils.Simulate.submit(form('customer'));
 
       const fetchOpts = fetchSpy.receivedArgument(1);
       expect(JSON.parse(fetchOpts.body)[fieldName]).toEqual(value);
+
+      expect(submitSpy.receivedArguments()).toBeDefined()
+      expect(submitSpy.receivedArgument(0)[fieldName]).toEqual(value)
     });
 
   const itSubmitsNewValue = (fieldName, value) =>
@@ -96,7 +145,7 @@ describe('CustomerForm', () => {
     itIncludesTheExistingValue('firstName');
     itRendersALabel('firstName', 'First name');
     itAssignsAnIdThatMatchesTheLabelId('firstName');
-    // itSubmitsExistingValue('firstName', 'value');
+    itSubmitsExistingValue('firstName', 'value');
     // itSubmitsNewValue('firstName', 'newValue');
   });
 

@@ -8,14 +8,15 @@ export default function CustomerForm({
   firstName,
   lastName,
   phoneNumber,
-  onSave
+  onSubmit
 }) {
   const [error, setError] = useState(false);
 
   const [customer, setCustomer] = useState({
     firstName,
     lastName,
-    phoneNumber
+    phoneNumber,
+    onSave
   });
 
   const handleChange = ({ target }) =>
@@ -26,18 +27,15 @@ export default function CustomerForm({
 
   const handleSubmit = async e => {
     e.preventDefault();
+    onsubmit(customer)
     const result = await window.fetch('/customers', {
       method: 'POST',
       credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(customer)
-    });
-    if (result.ok) {
-      const customerWithId = await result.json();
-      onSave(customerWithId);
-    } else {
-      setError(true);
-    }
+    });  
+    const cusotmerWithId = await result.json();
+    onSave(cusotmerWithId);
   };
 
   return (
@@ -76,5 +74,4 @@ export default function CustomerForm({
 };
 
 CustomerForm.defaultProps = {
-  onSave: () => { }
 };
