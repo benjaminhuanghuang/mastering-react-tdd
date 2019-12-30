@@ -3,6 +3,8 @@ import React from 'react'
 
 import RadioButtonIfAvailable from './RadioButtonIfAvailable'
 
+import {weeklyDateValues, dailyTimeSlots, toShortDate, toTimeValue} from './utils/timeHelper'
+
 const TimeSlotTable = ({
   salonOpensAt,
   salonClosesAt,

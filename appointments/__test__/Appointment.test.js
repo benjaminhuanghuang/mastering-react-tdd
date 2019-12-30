@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import { createContainer, withEvent } from './domManipulators';
 import Appointment from '../src/Appointment';
 

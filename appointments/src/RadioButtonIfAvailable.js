@@ -1,15 +1,6 @@
 import React from 'react';
 
-const mergeDateAndTime = (date, timeSlot) => {
-  const time = new Date(timeSlot);
-  return new Date(date).setHours(
-    time.getHours(),
-    time.getMinutes(),
-    time.getSeconds(),
-    time.getMilliseconds()
-  );
-};
-
+import {mergeDateAndTime} from './utils/timeHelper'
 
 const RadioButtonIfAvailable = ({
   availableTimeSlots,
