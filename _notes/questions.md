@@ -49,3 +49,8 @@ https://github.com/PacktPublishing/Mastering-React-Test-Driven-Development/blob/
 
 
 ## useCallback / useEffect  
+
+
+
+## full renddering and shallow rendering
+Ch 7 

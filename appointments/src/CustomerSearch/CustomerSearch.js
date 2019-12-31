@@ -1,7 +1,6 @@
-
-import React, { useEffect, useState, useCallback } from 'react';
-import { SearchButtons } from './SearchButtons'
-import { objectToQueryString } from './objectToQueryString';
+import React, { useEffect, useState } from 'react';
+import { objectToQueryString } from '../objectToQueryString';
+import { SearchButtons } from './SearchButtons';
 
 const CustomerRow = ({ customer, renderCustomerActions }) => (
   <tr>
@@ -14,24 +13,18 @@ const CustomerRow = ({ customer, renderCustomerActions }) => (
 
 export const CustomerSearch = ({
   renderCustomerActions,
+  lastRowIds,
+  searchTerm,
+  limit,
+  history,
+  location
 }) => {
   const [customers, setCustomers] = useState([]);
-  const [lastRowIds, setLastRowIds] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [limit, setLimit] = useState(10);
 
-  const handleSearchTextChanged = ({ target: { value } }) =>
-    setSearchTerm(value);
-
-  const handleNext = useCallback(() => {
-    const currentLastRowId = customers[customers.length - 1].id;
-    setLastRowIds([...lastRowIds, currentLastRowId]);
-  }, [customers, lastRowIds]);
-
-  const handlePrevious = useCallback(
-    () => setLastRowIds(lastRowIds.slice(0, -1)),
-    [lastRowIds]
-  );
+  const handleSearchTextChanged = ({ target: { value } }) => {
+    const params = { limit, searchTerm: value };
+    history.push(location.pathname + objectToQueryString(params));
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,12 +47,8 @@ export const CustomerSearch = ({
       );
       setCustomers(await result.json());
     };
-
     fetchData();
   }, [lastRowIds, searchTerm, limit]);
-
-  const hasNext = customers.length === limit;
-  const hasPrevious = lastRowIds.length > 0;
 
   return (
     <React.Fragment>
@@ -68,13 +57,12 @@ export const CustomerSearch = ({
         onChange={handleSearchTextChanged}
         placeholder="Enter filter text"
       />
-      <SearchButtons 
-       handleNext={handleNext}
-       handlePrevious={handlePrevious}
-       hasNext={hasNext}
-       hasPrevious={hasPrevious}
-       handleLimit={setLimit}
-       limit={limit}
+      <SearchButtons
+        customers={customers}
+        searchTerm={searchTerm}
+        limit={limit}
+        lastRowIds={lastRowIds}
+        pathname={location.pathname}
       />
       <table>
         <thead>
@@ -86,15 +74,13 @@ export const CustomerSearch = ({
           </tr>
         </thead>
         <tbody>
-          {
-            customers.map(customer =>
-              <CustomerRow 
-                customer={customer} 
-                key={customer.id} 
-                renderCustomerActions={renderCustomerActions}
-              />
-            )
-          }
+          {customers.map(customer => (
+            <CustomerRow
+              customer={customer}
+              key={customer.id}
+              renderCustomerActions={renderCustomerActions}
+            />
+          ))}
         </tbody>
       </table>
     </React.Fragment>
@@ -102,7 +88,7 @@ export const CustomerSearch = ({
 };
 
 CustomerSearch.defaultProps = {
-  renderCustomerActions: () => { },
+  renderCustomerActions: () => {},
   searchTerm: '',
   lastRowIds: []
 };
