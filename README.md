@@ -14,6 +14,7 @@ Projects for the book **Mastering React Test-Driven Development** by Daniel Irvi
 - Test form input: ch 2
 - Test double: ch 3
 - Client side validation: ch5
+- Handling server serrors: ch5
 
 
 

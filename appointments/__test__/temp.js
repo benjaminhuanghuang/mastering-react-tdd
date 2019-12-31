@@ -1,238 +1,329 @@
-import React, { useState, useCallback } from 'react';
+import React from 'react';
+import ReactTestUtils, { act } from 'react-dom/test-utils';
+import 'whatwg-fetch';
+import {
+  fetchResponseOk,
+  fetchResponseError,
+  requestBodyOf
+} from './spyHelpers';
+import { createContainer, withEvent } from './domManipulators';
+import { CustomerForm } from '../src/CustomerForm';
 
-const Error = () => (
-  <div className="error">An error occurred during save.</div>
-);
-
-const timeIncrements = (numTimes, startTime, increment) =>
-  Array(numTimes)
-    .fill([startTime])
-    .reduce((acc, _, i) =>
-      acc.concat([startTime + i * increment])
-    );
-
-const dailyTimeSlots = (salonOpensAt, salonClosesAt) => {
-  const totalSlots = (salonClosesAt - salonOpensAt) * 2;
-  const startTime = new Date().setHours(salonOpensAt, 0, 0, 0);
-  const increment = 30 * 60 * 1000;
-  return timeIncrements(totalSlots, startTime, increment);
+const validCustomer = {
+  firstName: 'first',
+  lastName: 'last',
+  phoneNumber: '123456789'
 };
 
-const weeklyDateValues = startDate => {
-  const midnight = new Date(startDate).setHours(0, 0, 0, 0);
-  const increment = 24 * 60 * 60 * 1000;
-  return timeIncrements(7, midnight, increment);
-};
+describe('CustomerForm', () => {
+  let render,
+    container,
+    form,
+    field,
+    labelFor,
+    element,
+    change,
+    submit,
+    blur;
 
-const toShortDate = timestamp => {
-  const [day, , dayOfMonth] = new Date(timestamp)
-    .toDateString()
-    .split(' ');
-  return `${day} ${dayOfMonth}`;
-};
-
-const toTimeValue = timestamp =>
-  new Date(timestamp).toTimeString().substring(0, 5);
-
-const mergeDateAndTime = (date, timeSlot) => {
-  const time = new Date(timeSlot);
-  return new Date(date).setHours(
-    time.getHours(),
-    time.getMinutes(),
-    time.getSeconds(),
-    time.getMilliseconds()
-  );
-};
-
-const RadioButtonIfAvailable = ({
-  availableTimeSlots,
-  date,
-  timeSlot,
-  checkedTimeSlot,
-  handleChange
-}) => {
-  const startsAt = mergeDateAndTime(date, timeSlot);
-  if (availableTimeSlots.some(a => a.startsAt === startsAt)) {
-    const isChecked = startsAt === checkedTimeSlot;
-    return (
-      <input
-        name="startsAt"
-        type="radio"
-        value={startsAt}
-        checked={isChecked}
-        onChange={handleChange}
-      />
-    );
-  }
-  return null;
-};
-
-const TimeSlotTable = ({
-  salonOpensAt,
-  salonClosesAt,
-  today,
-  availableTimeSlots,
-  checkedTimeSlot,
-  handleChange
-}) => {
-  const dates = weeklyDateValues(today);
-  const timeSlots = dailyTimeSlots(salonOpensAt, salonClosesAt);
-  return (
-    <table id="time-slots">
-      <thead>
-        <tr>
-          <th />
-          {dates.map(d => (
-            <th key={d}>{toShortDate(d)}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {timeSlots.map(timeSlot => (
-          <tr key={timeSlot}>
-            <th>{toTimeValue(timeSlot)}</th>
-            {dates.map(date => (
-              <td key={date}>
-                <RadioButtonIfAvailable
-                  availableTimeSlots={availableTimeSlots}
-                  date={date}
-                  timeSlot={timeSlot}
-                  checkedTimeSlot={checkedTimeSlot}
-                  handleChange={handleChange}
-                />
-              </td>
-            ))}
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-};
-
-export const AppointmentForm = ({
-  selectableServices,
-  service,
-  selectableStylists,
-  stylist,
-  serviceStylists,
-  onSave,
-  salonOpensAt,
-  salonClosesAt,
-  today,
-  availableTimeSlots,
-  startsAt
-}) => {
-  const [error, setError] = useState(false);
-
-  const [appointment, setAppointment] = useState({
-    service,
-    startsAt,
-    stylist
+  beforeEach(() => {
+    ({
+      render,
+      container,
+      form,
+      field,
+      labelFor,
+      element,
+      change,
+      submit,
+      blur
+    } = createContainer());
+    jest
+      .spyOn(window, 'fetch')
+      .mockReturnValue(fetchResponseOk({}));
   });
 
-  const handleSelectBoxChange = ({ target: { value, name } }) =>
-    setAppointment(appointment => ({
-      ...appointment,
-      [name]: value
-    }));
+  afterEach(() => {
+    window.fetch.mockRestore();
+  });
 
-  const handleStartsAtChange = useCallback(
-    ({ target: { value } }) =>
-      setAppointment(appointment => ({
-        ...appointment,
-        startsAt: parseInt(value)
-      })),
-    []
-  );
+  it('renders a form', () => {
+    render(<CustomerForm {...validCustomer} />);
+    expect(form('customer')).not.toBeNull();
+  });
 
-  const handleSubmit = async e => {
-    e.preventDefault();
-    const result = await window.fetch('/appointments', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(appointment)
+  it('has a submit button', () => {
+    render(<CustomerForm {...validCustomer} />);
+    const submitButton = element('input[type="submit"]');
+    expect(submitButton).not.toBeNull();
+  });
+
+  it('calls fetch with the right properties when submitting data', async () => {
+    render(<CustomerForm {...validCustomer} />);
+    await submit(form('customer'));
+    expect(window.fetch).toHaveBeenCalledWith(
+      '/customers',
+      expect.objectContaining({
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' }
+      })
+    );
+  });
+
+  it('notifies onSave when form is submitted', async () => {
+    const customer = { id: 123 };
+    window.fetch.mockReturnValue(fetchResponseOk(customer));
+    const saveSpy = jest.fn();
+
+    render(<CustomerForm {...validCustomer} onSave={saveSpy} />);
+    await submit(form('customer'));
+
+    expect(saveSpy).toHaveBeenCalledWith(customer);
+  });
+
+  it('does not notify onSave if the POST request returns an error', async () => {
+    window.fetch.mockReturnValue(fetchResponseError());
+    const saveSpy = jest.fn();
+
+    render(<CustomerForm {...validCustomer} onSave={saveSpy} />);
+    await submit(form('customer'));
+
+    expect(saveSpy).not.toHaveBeenCalled();
+  });
+
+  it('prevents the default action when submitting the form', async () => {
+    const preventDefaultSpy = jest.fn();
+
+    render(<CustomerForm {...validCustomer} />);
+    await submit(form('customer'), {
+      preventDefault: preventDefaultSpy
     });
-    if (result.ok) {
-      setError(false);
-      onSave();
-    } else {
-      setError(true);
-    }
+
+    expect(preventDefaultSpy).toHaveBeenCalled();
+  });
+
+  it('renders error message when fetch call fails', async () => {
+    window.fetch.mockReturnValue(fetchResponseError());
+
+    render(<CustomerForm {...validCustomer} />);
+    await submit(form('customer'));
+
+    expect(element('.error')).not.toBeNull();
+    expect(element('.error').textContent).toMatch(
+      'error occurred'
+    );
+  });
+
+  it('clears error message when fetch call succeeds', async () => {
+    window.fetch.mockReturnValueOnce(fetchResponseError());
+    window.fetch.mockReturnValue(fetchResponseOk());
+
+    render(<CustomerForm {...validCustomer} />);
+    await submit(form('customer'));
+    await submit(form('customer'));
+
+    expect(element('.error')).toBeNull();
+  });
+
+  it('does not submit the form when there are validation errors', async () => {
+    render(<CustomerForm />);
+
+    await submit(form('customer'));
+    expect(window.fetch).not.toHaveBeenCalled();
+  });
+
+  it('renders validation errors after submission fails', async () => {
+    render(<CustomerForm />);
+    await submit(form('customer'));
+    expect(window.fetch).not.toHaveBeenCalled();
+    expect(element('.error')).not.toBeNull();
+  });
+
+  it('renders field validation errors from server', async () => {
+    const errors = {
+      phoneNumber: 'Phone number already exists in the system'
+    };
+    window.fetch.mockReturnValue(
+      fetchResponseError(422, { errors })
+    );
+    render(<CustomerForm {...validCustomer} />);
+    await submit(form('customer'));
+    expect(element('.error').textContent).toMatch(
+      errors.phoneNumber
+    );
+  });
+
+  describe('submitting indicator', () => {
+    it('displays indicator when form is submitting', async () => {
+      render(<CustomerForm {...validCustomer} />);
+      act(() => {
+        ReactTestUtils.Simulate.submit(form('customer'));
+      });
+      await act(async () => {
+        expect(element('span.submittingIndicator')).not.toBeNull();
+      });
+    });
+
+    it('initially does not display the submitting indicator', () => {
+      render(<CustomerForm {...validCustomer} />);
+      expect(element('.submittingIndicator')).toBeNull();
+    });
+
+    it('hides indicator when form has submitted', async () => {
+      render(<CustomerForm {...validCustomer} />);
+      await submit(form('customer'));
+      expect(element('.submittingIndicator')).toBeNull();
+    });
+  });
+
+  const expectToBeInputFieldOfTypeText = formElement => {
+    expect(formElement).not.toBeNull();
+    expect(formElement.tagName).toEqual('INPUT');
+    expect(formElement.type).toEqual('text');
   };
 
-  const stylistsForService = appointment.service
-    ? serviceStylists[appointment.service]
-    : selectableStylists;
+  const itRendersAsATextBox = fieldName =>
+    it('renders as a text box', () => {
+      render(<CustomerForm {...validCustomer} />);
+      expectToBeInputFieldOfTypeText(field('customer', fieldName));
+    });
 
-  const timeSlotsForStylist = appointment.stylist
-    ? availableTimeSlots.filter(slot =>
-        slot.stylists.includes(appointment.stylist)
-      )
-    : availableTimeSlots;
+  const itIncludesTheExistingValue = fieldName =>
+    it('includes the existing value', () => {
+      render(
+        <CustomerForm
+          {...validCustomer}
+          {...{ [fieldName]: 'value' }}
+        />
+      );
+      expect(field('customer', fieldName).value).toEqual('value');
+    });
 
-  return (
-    <form id="appointment" onSubmit={handleSubmit}>
-      {error ? <Error /> : null}
-      <label htmlFor="service">Salon service</label>
-      <select
-        name="service"
-        id="service"
-        value={service}
-        onChange={handleSelectBoxChange}>
-        <option />
-        {selectableServices.map(s => (
-          <option key={s}>{s}</option>
-        ))}
-      </select>
+  const itRendersALabel = (fieldName, text) =>
+    it('renders a label', () => {
+      render(<CustomerForm {...validCustomer} />);
+      expect(labelFor(fieldName)).not.toBeNull();
+      expect(labelFor(fieldName).textContent).toEqual(text);
+    });
 
-      <label htmlFor="stylist">Stylist</label>
-      <select
-        name="stylist"
-        id="stylist"
-        value={stylist}
-        onChange={handleSelectBoxChange}>
-        <option />
-        {stylistsForService.map(s => (
-          <option key={s}>{s}</option>
-        ))}
-      </select>
+  const itAssignsAnIdThatMatchesTheLabelId = fieldName =>
+    it('assigns an id that matches the label id', () => {
+      render(<CustomerForm {...validCustomer} />);
+      expect(field('customer', fieldName).id).toEqual(fieldName);
+    });
 
-      <TimeSlotTable
-        salonOpensAt={salonOpensAt}
-        salonClosesAt={salonClosesAt}
-        today={today}
-        availableTimeSlots={timeSlotsForStylist}
-        checkedTimeSlot={appointment.startsAt}
-        handleChange={handleStartsAtChange}
-      />
+  const itSubmitsExistingValue = (fieldName, value) =>
+    it('saves existing value when submitted', async () => {
+      render(
+        <CustomerForm
+          {...validCustomer}
+          {...{ [fieldName]: value }}
+        />
+      );
 
-      <input type="submit" value="Add" />
-    </form>
-  );
-};
+      await submit(form('customer'));
 
-AppointmentForm.defaultProps = {
-  availableTimeSlots: [],
-  today: new Date(),
-  salonOpensAt: 9,
-  salonClosesAt: 19,
-  selectableServices: [
-    'Cut',
-    'Blow-dry',
-    'Cut & color',
-    'Beard trim',
-    'Cut & beard trim',
-    'Extensions'
-  ],
-  selectableStylists: ['Ashley', 'Jo', 'Pat', 'Sam'],
-  serviceStylists: {
-    Cut: ['Ashley', 'Jo', 'Pat', 'Sam'],
-    'Blow-dry': ['Ashley', 'Jo', 'Pat', 'Sam'],
-    'Cut & color': ['Ashley', 'Jo'],
-    'Beard trim': ['Pat', 'Sam'],
-    'Cut & beard trim': ['Pat', 'Sam'],
-    Extensions: ['Ashley', 'Pat']
-  },
-  onSave: () => {}
-};
+      expect(requestBodyOf(window.fetch)).toMatchObject({
+        [fieldName]: value
+      });
+    });
+
+  const itSubmitsNewValue = (fieldName, value) =>
+    it('saves new value when submitted', async () => {
+      render(
+        <CustomerForm
+          {...validCustomer}
+          {...{ [fieldName]: 'existingValue' }}
+        />
+      );
+      change(
+        field('customer', fieldName),
+        withEvent(fieldName, value)
+      );
+      await submit(form('customer'));
+
+      expect(requestBodyOf(window.fetch)).toMatchObject({
+        [fieldName]: value
+      });
+    });
+
+  describe('first name field', () => {
+    itRendersAsATextBox('firstName');
+    itIncludesTheExistingValue('firstName');
+    itRendersALabel('firstName', 'First name');
+    itAssignsAnIdThatMatchesTheLabelId('firstName');
+    itSubmitsExistingValue('firstName', 'value');
+    itSubmitsNewValue('firstName', 'newValue');
+  });
+
+  describe('last name field', () => {
+    itRendersAsATextBox('lastName');
+    itIncludesTheExistingValue('lastName');
+    itRendersALabel('lastName', 'Last name');
+    itAssignsAnIdThatMatchesTheLabelId('lastName');
+    itSubmitsExistingValue('lastName', 'value');
+    itSubmitsNewValue('lastName', 'newValue');
+  });
+
+  describe('phone number field', () => {
+    itRendersAsATextBox('phoneNumber');
+    itIncludesTheExistingValue('phoneNumber');
+    itRendersALabel('phoneNumber', 'Phone number');
+    itAssignsAnIdThatMatchesTheLabelId('phoneNumber');
+    itSubmitsExistingValue('phoneNumber', '12345');
+    itSubmitsNewValue('phoneNumber', '67890');
+  });
+
+  describe('validation', () => {
+    const itInvalidatesFieldWithValue = (
+      fieldName,
+      value,
+      description
+    ) => {
+      it(`displays error after blur when ${fieldName} field is '${value}'`, () => {
+        render(<CustomerForm {...validCustomer} />);
+
+        blur(
+          field('customer', fieldName),
+          withEvent(fieldName, value)
+        );
+
+        expect(element('.error')).not.toBeNull();
+        expect(element('.error').textContent).toMatch(description);
+      });
+    };
+
+    itInvalidatesFieldWithValue(
+      'firstName',
+      ' ',
+      'First name is required'
+    );
+    itInvalidatesFieldWithValue(
+      'lastName',
+      ' ',
+      'Last name is required'
+    );
+    itInvalidatesFieldWithValue(
+      'phoneNumber',
+      ' ',
+      'Phone number is required'
+    );
+    itInvalidatesFieldWithValue(
+      'phoneNumber',
+      'invalid',
+      'Only numbers, spaces and these symbols are allowed: ( ) + -'
+    );
+
+    it('accepts standard phone number characters when validating', () => {
+      render(<CustomerForm {...validCustomer} />);
+
+      blur(
+        element("[name='phoneNumber']"),
+        withEvent('phoneNumber', '0123456789+()- ')
+      );
+
+      expect(element('.error')).toBeNull();
+    });
+  });
+});
