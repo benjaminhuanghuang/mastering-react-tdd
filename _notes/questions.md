@@ -54,3 +54,7 @@ https://github.com/PacktPublishing/Mastering-React-Test-Driven-Development/blob/
 
 ## full renddering and shallow rendering
 Ch 7 
+
+
+## router history
+ch 7

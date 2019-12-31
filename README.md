@@ -24,3 +24,4 @@ Projects for the book **Mastering React Test-Driven Development** by Daniel Irvi
 - Ch 5 start:                            end: chapter-5-exercises              
 - Ch 6 start: search-table, end react-router
 - Ch 7 start: end: add-redux
+- Ch 8 
