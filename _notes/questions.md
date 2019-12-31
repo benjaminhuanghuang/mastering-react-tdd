@@ -37,3 +37,12 @@ How about using dropdownNode.childNodes directly?
 
 
 ## whatwg-fetch
+
+
+## shallow render
+Ch 4 
+tag shallow-rendering
+
+https://github.com/PacktPublishing/Mastering-React-Test-Driven-Development/blob/chapter-5-exercises/appointments/test/shallowHelpers.js
+
+https://github.com/PacktPublishing/Mastering-React-Test-Driven-Development/blob/chapter-5-exercises/appointments/test/shallowHelpers.test.js
