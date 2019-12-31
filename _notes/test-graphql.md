@@ -8,3 +8,7 @@
   "plugins": ["@babel/transform-runtime", "relay"]
 }
 ```
+
+
+1. test Graphql env 
+2. queryCustomer.test.js
