@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { createContainer, withEvent } from './domManipulators';
-import AppointmentsDayView from '../src/AppointmentsDayView';
+import { AppointmentsDayView } from '../src/AppointmentsDayView';
 
 describe('AppointmentsDayView', () => {
   const today = new Date();

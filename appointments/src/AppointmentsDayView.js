@@ -8,7 +8,7 @@ const appointmentTimeOfDay = startsAt => {
 };
 
 
-export default function AppointmentsDayView({ appointments }) {
+export const AppointmentsDayView = ({ appointments }) => {
   const [selectedAppointment, setSelectedAppointment] = useState(0);
   return (
     <div id="appointmentsDayView">
