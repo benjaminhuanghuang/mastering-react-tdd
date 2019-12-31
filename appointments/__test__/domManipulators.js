@@ -11,7 +11,7 @@ export const createContainer = () => {
   const element = selector => container.querySelector(selector);
 
   // The DOM objects are changes, By calling Array.from, we taks a snaphow of the value within it at a particular momonet
-  const elements = selector =>Array.from(container.querySelectorAll(selector));
+  const elements = selector => Array.from(container.querySelectorAll(selector));
 
   const simulateEvent = eventName => (element, eventData) =>
     ReactTestUtils.Simulate[eventName](element, eventData);
@@ -27,7 +27,12 @@ export const createContainer = () => {
   const children = element => Array.from(element.childNodes);
 
   return {
-    render: component => ReactDOM.render(component, container),
+    render: component =>
+      act(() => {
+        ReactDOM.render(component, container);
+      }),
+    renderAndWait: async component =>
+      await act(async () => ReactDOM.render(component, container)),
     container,
     form,
     field,

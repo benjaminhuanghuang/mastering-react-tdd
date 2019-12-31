@@ -5,7 +5,7 @@ const Error = () => (
   <div className="error">An error occurred during save.</div>
 );
 
-export default function AppointmentForm ({
+export const AppointmentForm = ({
   selectableServices,
   service,
   selectableStylists,
@@ -17,7 +17,7 @@ export default function AppointmentForm ({
   today,
   availableTimeSlots,
   startsAt
-}) {
+}) => {
   const [error, setError] = useState(false);
 
   const [appointment, setAppointment] = useState({

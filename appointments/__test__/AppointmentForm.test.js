@@ -6,7 +6,7 @@ import {
   requestBodyOf
 } from './spyHelpers';
 import { createContainer, withEvent } from './domManipulators';
-import AppointmentForm from '../src/AppointmentForm';
+import {AppointmentForm} from '../src/AppointmentForm';
 
 describe('AppointmentForm', () => {
   let render,
