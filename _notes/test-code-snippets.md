@@ -11,6 +11,9 @@ container.querySelector('table#time-slots');
 // Find element by type
 cells[0].querySelector('input[type="radio"]')
 
+// by Type
+expect(elementMatching(type(AppointmentsDayViewLoader))).toBeDefined();
+
 ```
 
 
