@@ -23,3 +23,11 @@ A redux store is an object of data. The data for CustomerForm looks like
   }
 }
 ```
+
+1. Add redux, saga.
+2. Modify /test/domManipulators.js
+3. Submit using redux action, modify test/CustomerForm.test.js
+```
+import { createContainerWithStore, withEvent } from './domManipulators';
+import { expectRedux } from 'expect-redux';
+```
