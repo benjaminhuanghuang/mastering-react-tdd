@@ -15,9 +15,11 @@ Projects for the book **Mastering React Test-Driven Development** by Daniel Irvi
 - Test double: ch 3
 - Client side validation: ch5
 - Handling server serrors: ch5
-
+- Submit indicating: ch5
 
 
 ## Tags
 - Ch 3 start: end: load-available-time-slots
-- Ch 4 start: load-available-time-slots, end: 
+- Ch 4 start: load-available-time-slots, end:
+- Ch 5 start:                            end: chapter-5-exercises              
+- Ch 6 start: search-table
